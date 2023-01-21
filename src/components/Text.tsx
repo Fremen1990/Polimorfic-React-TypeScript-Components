@@ -1,4 +1,11 @@
-import {ComponentPropsWithoutRef, ElementType, PropsWithChildren, ReactNode} from "react";
+import {
+    ComponentPropsWithoutRef,
+    ComponentPropsWithRef,
+    ElementType,
+    forwardRef,
+    PropsWithChildren, ReactElement,
+    ReactNode
+} from "react";
 
 // rainbow ROYGBIV
 type Rainbow = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'indigo' | 'violet'
@@ -31,7 +38,34 @@ type TextProps = {
     color?: Rainbow | "black";
 }
 
-// TOD: 20. The problem(s) we want to tackle
+type PolymorphicRef<C extends ElementType> = ComponentPropsWithRef<C>["ref"]
+
+type Props<C extends ElementType, P> = PolymorphicComponentProps<C, P>
+
+type PolymorphicComponentPropsWithRef<C extends ElementType, P> =
+    PolymorphicComponentProps<C, P>
+    & { ref?: PolymorphicRef<C> }
+
+type TextComponent = <C extends ElementType>(props: PolymorphicComponentPropsWithRef<C, TextProps>) => ReactElement | null
+
+export const TextWithRef: TextComponent = forwardRef(<C extends ElementType = 'span'>({
+                                                                                          as,
+                                                                                          color,
+                                                                                          style,
+                                                                                          children,
+                                                                                          ...restProps
+                                                                                      }: Props<C, TextProps>, ref?: PolymorphicRef<C>) => {
+
+        const Component = as || 'span'
+
+        const internalStyles = color ? {style: {...style, color}} : {}
+
+        return (
+            <Component {...restProps} {...internalStyles} ref={ref}>{children} </Component>
+        )
+    }
+)
+
 
 export const Text = <C extends ElementType = 'span'>({
                                                          as,
